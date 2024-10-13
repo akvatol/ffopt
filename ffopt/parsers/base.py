@@ -24,8 +24,7 @@ class BaseParser:
     def extractors(self, key: str, extractor) -> None:
         self.__extractors[key] = extractor
 
-    @extractors.deleter
-    def extractors(self, key: str) -> None:
+    def pop_extractor(self, key: str) -> None:
         self.__extractors.pop(key, None)
 
     @property
