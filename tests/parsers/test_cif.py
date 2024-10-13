@@ -1,17 +1,15 @@
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
-import pytest
 from pymatgen.io.cif import CifParser
 from pyxtal import pyxtal
 
 from ffopt.parsers.cif import (
     ParserCif,
-    gulp_only_core_structure,
     get_full_lattice,
     get_group_number,
     get_irr_atoms,
     get_lattice_type,
+    gulp_only_core_structure,
 )
 
 # Example CIF file path for testing
@@ -116,4 +114,10 @@ def test_gulp_only_core_structure():
     struct = gulp_only_core_structure(xtal_obj)
     
     # Check that the irreducible atoms list has the correct length and content
-    assert struct == 'cell\n3.32 3.32 6.46 90.0 90.0 120.0 1 0 1 0 0 0\nfractional\nNb core 0.0 0.0 0.0 0.0 0 0 0\nS core 0.3333333333333333 0.6666666666666666 0.25 0.0 0 0 0\nspace\n194'
+    assert struct == '''cell
+3.32 3.32 6.46 90.0 90.0 120.0 1 0 1 0 0 0
+fractional
+Nb core 0.0 0.0 0.0 0.0 0 0 0
+S core 0.3333333333333333 0.6666666666666666 0.25 0.0 0 0 0
+space
+194'''
