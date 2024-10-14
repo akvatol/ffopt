@@ -28,8 +28,8 @@ def test_energy(gamma: GulpSParser):
 
 def test_atoms(gamma: GulpSParser):
     assert gamma.data['atoms'] == [
-        {'no': 1, 'atomic_label': 'W', 'x': 0.333333, 'y': 0.666667, 'z': 0.25},
-        {'atomic_label': 'S', 'no': 2, 'x': 0.333333, 'y': 0.666667, 'z': 0.617384}
+        {'no': 1, 'atomic_label': 'W', 'x': 0.333333, 'y': 0.666667, 'z': 0.25},  # noqa: E501
+        {'atomic_label': 'S', 'no': 2, 'x': 0.333333, 'y': 0.666667, 'z': 0.617384}  # noqa: E501
         ]
 
 
@@ -42,6 +42,7 @@ def test_cell(gamma: GulpSParser):
         'beta': {'value': 90.0, 'unit': 'Degrees'},
         'gamma': {'value': 120.0, 'unit': 'Degrees'}
         }
+
 
 def test_bulk_modulus(gamma: GulpSParser):
     """Test the bulk modulus data."""
