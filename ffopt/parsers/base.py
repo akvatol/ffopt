@@ -11,7 +11,7 @@ class BaseParser:
 
     def parse(self) -> None:
         with open(self.filepath, 'r') as file:
-            content = file.read()
+            content = file.readlines()
 
         for key, extractor in self._extractors.items():
             self._data[key] = extractor(content)
