@@ -54,7 +54,7 @@ def read_cell_parameters(content):
           (e.g., 'a', 'b', 'c', 'alpha', etc.), and each value is a dictionary 
           containing 'value' and 'unit'.
     """
-    cell_parameters = {}
+    cell_parameters = []
 
     # Regular expression to match lines with cell parameters
     pattern = re.compile(r"\s*(\w+)\s+([\d\.]+)\s+(\w+)")
@@ -74,11 +74,8 @@ def read_cell_parameters(content):
             match = pattern.match(line)
 
         if match:
-            param, value, unit = match.groups()
-            cell_parameters[param] = {
-                "value": float(value),
-                "unit": unit
-            }
+            _param, value, _unit = match.groups()
+            cell_parameters.append(float(value))
 
     return cell_parameters
 
@@ -150,14 +147,13 @@ def read_asymmetric_unit(content):
             match = atom_pattern.match(line)
             if match:
                 # Extract atom information from the matched line
-                no, atomic_label, x, y, z = match.groups()
-                atom_data = {
-                    "no": int(no),
-                    "atomic_label": atomic_label,
-                    "x": float(x),
-                    "y": float(y),
-                    "z": float(z),
-                }
+                _no, atomic_label, x, y, z = match.groups()
+                atom_data = [
+                    atomic_label,
+                    float(x),
+                    float(y),
+                    float(z),
+                ]
                 atoms.append(atom_data)
     
     return atoms
