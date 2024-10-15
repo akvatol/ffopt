@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from subprocess import CompletedProcess, run, PIPE
+from subprocess import CompletedProcess, run
 
 __all__ = ["Process", "execute_process"]
 
