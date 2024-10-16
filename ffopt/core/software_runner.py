@@ -30,7 +30,6 @@ def execute_process(process: Process) -> CompletedProcess:
     >>> execute_process(args=['/path/to/software'], stdin=input_file_data)
     """
     return run(
-        executable=process.executable,
         input=process.input_data,
         args=process.args,
         timeout=process.timeout,
