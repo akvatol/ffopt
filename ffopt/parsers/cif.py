@@ -7,6 +7,8 @@ from pyxtal import pyxtal
 
 from ffopt.parsers.base import BaseParser
 
+__all__ = ['ParserCif', ] 
+
 
 class ParserCif(BaseParser):
     """

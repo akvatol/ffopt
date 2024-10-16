@@ -1,5 +1,7 @@
 import re
 
+import numpy as np
+
 
 def read_bounds_file(file_path: str) -> tuple[
     dict[str, tuple[float, float]],
@@ -60,7 +62,7 @@ def replace_placeholders(template_str, values_dict):
     def replacer(match):
         key = match.group(1)
         if key in values_dict:
-            return values_dict[key]
+            return str(values_dict[key])
         else:
             raise KeyError(f"Key '{key}' not found in values_dict")
 
@@ -75,16 +77,13 @@ def _get_mins_maxs(variable_bounds: dict) -> tuple[list[float], list[float]]:
 
 
 # TODO
-def get_constrains(data: dict):
-    pass
-
-
-# TODO
 def get_callback(data: dict):
     pass
 
 
-# TODO
-def process_res(res, constrains, path):
-    # res.X numpy, res.F numpy
-    pass
+# FIXME
+def process_res(res, path, constrains=None):
+    fields_path = path.parent.joinpath('fields.csv')
+    errors_path = path.parent.joinpath('errors.csv')
+    np.savetxt(fields_path, res.X, delimiter=' ', fmt='%.5f')
+    np.savetxt(errors_path, res.F, delimiter=' ', fmt='%.5f')

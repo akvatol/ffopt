@@ -1,7 +1,7 @@
 [model]
 [model.software]
 software = 'gulp'
-path = 'C:\\Users\\Anton\\Desktop\\Chemistry\\gulp-6.0\\Exe\\gulp.exe'
+path = '/home/mpds_code/gulp-6.1.0/Src/gulp'
 xtol = 12
 time = 50
 [model.structures]
@@ -9,7 +9,7 @@ time = 50
 # g1
 energy = -13.4567
 # g2
-gulp_structure = 'test_files/WS2_2H.cif'
+structure = 'test_files/WS2_2H.cif'
 # g3
 kpoints_index = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.5], [0.5, 0.0, 0.0]]
 kpoints_values = [[0, 0, 0, 27.4, 27.4, 45], [19.0, 19.0, 19.0, 19.0], [158.6, 158.6, 160.6, 160.6]]
@@ -17,21 +17,35 @@ kpoints_values = [[0, 0, 0, 27.4, 27.4, 45], [19.0, 19.0, 19.0, 19.0], [158.6, 1
 elastic_index = [[1, 1], [3, 3], [4, 4]]
 elastic_values = [262.0, 53.0, 13.0]
 bulk_index = [2]
-bulk_values = [63.0]
+bulk_modulus = 63.0
 youngs_index = [1, 2, 3]
-youngs_values = [248.0, 248.0, 52.0]
+youngs_modulus = [248.0, 248.0, 52.0]
+[model.structures.3R_WS2]
+structure = '''cell
+3.1580    3.1580   18.4900   90.0000   90.0000  120.0000   1 1 1 0 0 0#  J. Solid State Chem. (1987), 70, 207, 209. Schutte W.J., De Boer J.L., Jellinek F.
+frac
+W       0.000000000000    0.000000000000    0.000000000  0.000  0 0 0
+S       0.000000000000    0.000000000000    0.581000000  0.000  1 1 1
+S       0.000000000000    0.000000000000    0.750300000  0.000  1 1 1
+W       0.666666666667    0.333333333333    0.333330000  0.000  1 1 1
+S       0.666666666667    0.333333333333    0.914330000  0.000  1 1 1
+S       0.666666666667    0.333333333333    0.083630000  0.000  1 1 1
+W       0.333333333333    0.666666666667    0.666670000  0.000  1 1 1
+S       0.333333333333    0.666666666667    0.247670000  0.000  1 1 1
+S       0.333333333333    0.666666666667    0.416970000  0.000  1 1 1
+space
+156'''
+sshift = 1.5
+energy = -20.179
 [model.pipeline]
 [model.pipeline.1]
-bounds = 'D:\\Anton\\QMdata\\Bandura_Grant_EZFF\\HfS2\\GT_HfS2\\New\\variable_bounds_HfS2_fixed_new.txt'
-ff_template = 'D:\\Anton\\QMdata\\Bandura_Grant_EZFF\\HfS2\\GT_HfS2\\New\\template_HfS2_fixed_new.txt'
+bounds = '/home/mpds_code/code/ffopt/test_files/bounds.txt'
+ff_template = '/home/mpds_code/code/ffopt/test_files/simple_template.txt'
 type="MOO"
-name = "DE"
-pop_size = 500
-n_gen = 300
-n_errors = 4
+name = "NSGA3"
+pop_size = 300
+n_gen = 10
+n_errors = 3
+n_jobs = 1
 [model.pipeline.1.software]
-'maxcycl fit' = 300
-[model.pipeline.2]
-type="SOO"
-name = "simpleGD"
-calc_template = 'D:\\Anton\\QMdata\\Bandura_Grant_EZFF\\HfS2\\GT_HfS2\\New\\template_HfS2_fixed_new.txt'
+time = 30

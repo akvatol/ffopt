@@ -61,13 +61,7 @@ def test_young_modulus(gamma: GulpSParser):
 
 def test_elastic_modulus(gamma: GulpSParser):
     """Test the elastic modulus matrix data."""
-    assert gamma.data['elastic_modulus'][1][1] == 174.2320
-
-
-def test_phonon_gamma(gamma: GulpSParser):
-    """Test the phonon gamma data."""
-    assert gamma.data['phonon_gamma'][0] == 0.0
-    assert gamma.data['phonon_gamma'][-1] == 600.04
+    assert gamma.data['elastic_values'][1][1] == 174.2320
 
 
 def test_phonon_kpoints(kpoints: GulpSParser):

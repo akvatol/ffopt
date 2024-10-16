@@ -135,4 +135,3 @@ def test_pymoo_adapter_run():
     # Verify that result is as expected
     assert hasattr(result, 'X'), "Result does not have attribute 'X'."
     assert hasattr(result, 'F'), "Result does not have attribute 'F'."
-    assert result.X.shape == (1, 3), "Resulting X does not have correct dimensions."

@@ -39,7 +39,8 @@ class PymooMOAdapter(OptimizationStrategy):
         self.n_jobs = n_jobs
         self.variable_names = variable_names
 
-    def run(self, error_function, initial_guess=None):
+    # FIXME CALLBACK
+    def run(self, error_function, initial_guess=None, callback=None):
         self.algorithm.setup(self.problem, termination=NoTermination())
         for i in range(self.n_gen):
             print(i + 1)
@@ -64,10 +65,10 @@ class PymooMOAdapter(OptimizationStrategy):
         return res
 
     def get_guess(self):
-        return self.algorithm.reslut().X
+        return self.algorithm.result().X
 
+    @staticmethod
     def _define_problem(
-        self,
         *,
         num_errors: int,
         num_variables: int,
@@ -122,7 +123,11 @@ class PymooMOAdapter(OptimizationStrategy):
         )
 
         algorithm = cls._initialize_algorithm(data["name"], data)
-        problem = cls._define_problem(int(data["n_errors"]), n_var, bounds)
+        problem = cls._define_problem(
+            num_errors=int(data["n_errors"]),
+            num_variables=n_var,
+            variable_bounds=bounds,
+        )
         return cls(
             algorithm=algorithm,
             problem=problem,

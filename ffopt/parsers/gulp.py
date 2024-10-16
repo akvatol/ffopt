@@ -7,16 +7,12 @@ from ffopt.parsers.base import BaseParser
 class GulpSParser(BaseParser):
     """A parser for GULP `.out` files containing data for a single system."""
 
-    def __init__(self, filepath):
-        super().__init__(filepath)
+    def __init__(self, filepath, content=None):
+        super().__init__(filepath, content)
         self._extractors = {
-            # 1st group
             "atoms": read_asymmetric_unit,
-            # 2nd
             "cell": read_cell_parameters,
-            # 3rd
             "energy": read_energy,
-            # 4th
             "bulk_modulus": partial(
                 read_bulk_shear, pattern="Bulk  Modulus (GPa)"
             ),
@@ -26,10 +22,9 @@ class GulpSParser(BaseParser):
             "young_modulus": partial(
                 read_bulk_shear, pattern="Youngs Moduli (GPa)"
             ),
-            "elastic_modulus": parse_elastic_constant_matrix,
-            # 5th
-            "phonon_gamma": read_phonon_G,
-            "phonon_kpoints": read_phonon_kpoints,
+            "elastic_values": parse_elastic_constant_matrix,
+            # "phonon_gamma": read_phonon_G,
+            "kpoints_values": read_phonon_kpoints,
         }
 
 
@@ -179,7 +174,7 @@ def read_energy(content):
     Returns:
         Energy of the structure in eV
     """
-    energy_in_eV = 0
+    energy_in_eV = 10**5
     for line in content:
         if "Total lattice energy" in line and line.strip().split()[-1] == "eV":
             energy_in_eV = float(line.strip().split()[-2])
@@ -188,7 +183,7 @@ def read_energy(content):
 
 
 def read_bulk_shear(content, pattern="Bulk  Modulus (GPa)"):
-    values = [0, 0, 0]
+    values = [10**5] * 3
     for line in content:
         if pattern in line:
             _ = line.split("=")
@@ -234,4 +229,4 @@ def parse_elastic_constant_matrix(content):
                 row_values = list(map(float, match.group(2).split()))
                 matrix.append(row_values)
 
-    return matrix
+    return matrix if matrix else [[10**5] * 6] * 6
