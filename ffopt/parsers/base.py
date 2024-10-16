@@ -4,17 +4,20 @@ from pathlib import PurePath
 class BaseParser:
     """Extendable parser for gulp out files."""
 
-    def __init__(self, filepath: PurePath):
+    def __init__(self, filepath: PurePath, content=None):
         self.filepath = filepath
         self._data: dict = {}
         self._extractors: dict = {}
 
-    def parse(self) -> None:
-        with open(self.filepath, 'r') as file:
-            content = file.readlines()
+        if filepath:
+            with open(self.filepath, 'r') as file:
+                self.content = file.readlines()
+        else:
+            self.content = content
 
+    def parse(self) -> None:
         for key, extractor in self._extractors.items():
-            self._data[key] = extractor(content)
+            self._data[key] = extractor(self.content)
 
     @property
     def extractors(self):
