@@ -1,15 +1,12 @@
-
-
 import numpy as np
 from joblib import Parallel, delayed
-from pymoo.algorithms.soo.nonconvex.de import DE
-from pymoo.algorithms.soo.nonconvex.es import ES
-from pymoo.algorithms.soo.nonconvex.ga import GA
-from pymoo.algorithms.soo.nonconvex.isres import ISRES
+from pymoo.algorithms.moo.nsga3 import NSGA3
+from pymoo.algorithms.moo.unsga3 import UNSGA3
 from pymoo.core.evaluator import Evaluator
 from pymoo.core.problem import Problem
 from pymoo.core.termination import NoTermination
 from pymoo.problems.static import StaticProblem
+from pymoo.util.ref_dirs import get_reference_directions
 
 from ffopt.jobs.utils import _get_mins_maxs, read_bounds_file
 from ffopt.optimization.base import OptimizationStrategy
@@ -24,7 +21,8 @@ class PymooMOAdapter(OptimizationStrategy):
         n_gen: int,
         n_errors: int,
         n_jobs: int,
-        variable_names: list):
+        variable_names: list,
+    ):
         """
         Arguments
         ---------
@@ -50,7 +48,7 @@ class PymooMOAdapter(OptimizationStrategy):
             data = Parallel(n_jobs=self.n_jobs)(
                 delayed(error_function)(
                     dict(zip(self.variable_names, x, strict=False))
-                    )
+                )
                 for x in X
             )
             F = np.array(data)
@@ -99,36 +97,37 @@ class PymooMOAdapter(OptimizationStrategy):
     def _initialize_algorithm(algorithm_name, params):
         """
         Parameters:
-        - algorithm_name (str):  Возможные значения: 'DE', 'ES', 'GA', 'ISRES'.
+        - algorithm_name (str):  Возможные значения: 'CTAEA', 'NSGA3', 'UNSGA3'.
         - params (dict): Словарь с параметрами для инициализации алгоритма.
 
         Returns:
         - object: Инициализированный экземпляр алгоритма.
-        
+
         Raises:
         - ValueError: Если передано некорректное имя алгоритма.
         """
 
-        if algorithm_name == 'DE':
-            return DE(**params)
-        elif algorithm_name == 'ES':
-            return ES(**params)
-        elif algorithm_name == 'GA':
-            return GA(**params)
-        elif algorithm_name == 'ISRES':
-            return ISRES(**params)
+        if algorithm_name == "UNSGA3":
+            return UNSGA3(**params)
+        elif algorithm_name == "NSGA3":
+            return NSGA3(**params)
         else:
             raise ValueError(f"Unknown algorithm: {algorithm_name}")
 
     @classmethod
     def from_dict(cls, data):
-        bounds, n_var, variable_names = read_bounds_file(data['bounds'])
-        algorithm = cls._initialize_algorithm(data['name'], data)
-        problem = cls._define_problem(int(data['n_errors']), n_var, bounds)
-        return cls(algorithm=algorithm,
-                    problem=problem,
-                    n_gen=int(data['n_gen']),
-                    n_errors=int(data['n_errors']),
-                    n_jobs=int(data['n_jobs']),
-                    variable_names=variable_names
-                    )
+        bounds, n_var, variable_names = read_bounds_file(data["bounds"])
+        data["ref_dirs"] = get_reference_directions(
+            "das-dennis", int(data["n_errors"]), n_partitions=n_var
+        )
+
+        algorithm = cls._initialize_algorithm(data["name"], data)
+        problem = cls._define_problem(int(data["n_errors"]), n_var, bounds)
+        return cls(
+            algorithm=algorithm,
+            problem=problem,
+            n_gen=int(data["n_gen"]),
+            n_errors=int(data["n_errors"]),
+            n_jobs=int(data["n_jobs"]),
+            variable_names=variable_names,
+        )
