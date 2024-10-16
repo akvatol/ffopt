@@ -13,16 +13,16 @@ def generate_data_indexes(data_dict):
     data_indexes = {}
     for _key, value in data_dict.items():
         if isinstance(value, dict):
-            if 'kpoints_index' in value:
-                data_indexes['kpoints_values'] = value['kpoints_index']
-            if 'elastic_index' in value:
-                data_indexes['elastic_values'] = value['elastic_index']
-            if 'bulk_index' in value:
-                data_indexes['bulk_modulus'] = value['bulk_index']
-            if 'youngs_index' in value:
-                data_indexes['youngs_modulus'] = value['youngs_index']
-            if 'shear_index' in value:
-                data_indexes['shear_modulus'] = value['shear_index']
+            if "kpoints_index" in value:
+                data_indexes["kpoints_values"] = value["kpoints_index"]
+            if "elastic_index" in value:
+                data_indexes["elastic_values"] = value["elastic_index"]
+            if "bulk_index" in value:
+                data_indexes["bulk_modulus"] = value["bulk_index"]
+            if "youngs_index" in value:
+                data_indexes["youngs_modulus"] = value["youngs_index"]
+            if "shear_index" in value:
+                data_indexes["shear_modulus"] = value["shear_index"]
     return data_indexes
 
 
@@ -41,7 +41,9 @@ def get_data_by_index(data, indices):
         elif isinstance(index, int):
             result.append(data[index - 1])
         else:
-            raise ValueError("Неверный формат индекса. Ожидается int или list[int, int]")
+            raise ValueError(
+                "Неверный формат индекса. Ожидается int или list[int, int]"
+            )
     return result
 
 
@@ -49,7 +51,7 @@ def get_data_kpoints(target, calculated):
     data1 = []
     data2 = []
     for i, j in zip(target, calculated, strict=True):
-        # Это нужно, чтобы алгоритм правильно срабатывал, если парсер ничего не нашел. 
+        # Это нужно, чтобы алгоритм правильно срабатывал, если парсер ничего не нашел.
         # т.к. вы этом случае он вернёт [-1000]
         if len(i) > len(j):
             j.extend(j * (len(i) // len(j) + 1))
@@ -60,7 +62,7 @@ def get_data_kpoints(target, calculated):
     if len(data2) < len(data1):
         data2.extend(data2[: len(data1) - len(data2)])
     elif len(data2) > len(data1):
-        data2 = data2[:len(data1)]
+        data2 = data2[: len(data1)]
 
     return data1, data2
 
@@ -134,9 +136,15 @@ class ErrorCalculator:
 
                 if group_name:
                     if group_name not in groups:
-                        groups[group_name] = {'target': [], 'calculated': []}
-                    groups[group_name]["target"].extend(target if isinstance(target, list) else [target])
-                    groups[group_name]["calculated"].extend(calculated if isinstance(calculated, list) else [calculated])
+                        groups[group_name] = {"target": [], "calculated": []}
+                    groups[group_name]["target"].extend(
+                        target if isinstance(target, list) else [target]
+                    )
+                    groups[group_name]["calculated"].extend(
+                        calculated
+                        if isinstance(calculated, list)
+                        else [calculated]
+                    )
         return groups
 
     # TODO: Расширить
@@ -179,10 +187,15 @@ def grouping_rule(name):
     match name.lower():
         case "energy":
             group = 1
-# FIXME
-#         case "cell" | "atoms":
-#             group = 2
-        case "bulk_modulus" | "elastic_values" | "youngs_modulus" | "shear_modulus":
+        # FIXME
+        #         case "cell" | "atoms":
+        #             group = 2
+        case (
+            "bulk_modulus"
+            | "elastic_values"
+            | "youngs_modulus"
+            | "shear_modulus"
+        ):
             group = 3
         case "kpoints_values":
             group = 4

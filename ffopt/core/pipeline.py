@@ -1,5 +1,4 @@
 """Generic optimization pipeline for subsequentall optimization."""
-from pathlib import Path
 
 from ffopt.jobs.objective_function import FunctionFactory
 from ffopt.jobs.utils import get_callback
