@@ -98,8 +98,10 @@ class PymooMOAdapter(OptimizationStrategy):
     def _initialize_algorithm(algorithm_name, params):
         """
         Parameters:
-        - algorithm_name (str):  Возможные значения: 'CTAEA', 'NSGA3', 'UNSGA3'.
-        - params (dict): Словарь с параметрами для инициализации алгоритма.
+        - algorithm_name (str):  
+            Возможные значения: 'CTAEA', 'NSGA3', 'UNSGA3'.
+        - params (dict): 
+            Словарь с параметрами для инициализации алгоритма.
 
         Returns:
         - object: Инициализированный экземпляр алгоритма.

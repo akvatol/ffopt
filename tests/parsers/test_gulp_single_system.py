@@ -65,9 +65,9 @@ def test_elastic_modulus(gamma: GulpSParser):
 
 
 def test_phonon_kpoints(kpoints: GulpSParser):
-    assert kpoints.data['phonon_kpoints'][0][0] == 0.0
-    assert kpoints.data['phonon_kpoints'][0][-1] == 600.04
-    assert kpoints.data['phonon_kpoints'][1][0] == 17.78
-    assert kpoints.data['phonon_kpoints'][1][-1] == 595.19
-    assert kpoints.data['phonon_kpoints'][2][0] == 100.60
-    assert kpoints.data['phonon_kpoints'][2][-1] == 524.42
+    assert kpoints.data['kpoints_values'][0][0] == 0.0
+    assert kpoints.data['kpoints_values'][0][-1] == 600.04
+    assert kpoints.data['kpoints_values'][1][0] == 17.78
+    assert kpoints.data['kpoints_values'][1][-1] == 595.19
+    assert kpoints.data['kpoints_values'][2][0] == 100.60
+    assert kpoints.data['kpoints_values'][2][-1] == 524.42

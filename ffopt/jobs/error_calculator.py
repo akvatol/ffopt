@@ -37,9 +37,16 @@ def get_data_by_index(data, indices):
             sub_result = data
             for idx in index:
                 sub_result = sub_result[idx - 1]
-            result.append(sub_result)
+            if isinstance(sub_result, list):
+                result.extend(sub_result)
+            else:
+                result.append(sub_result)
         elif isinstance(index, int):
-            result.append(data[index - 1])
+            sub_result = data[index - 1]
+            if isinstance(sub_result, list):
+                result.extend(sub_result)
+            else:
+                result.append(sub_result)
         else:
             raise ValueError(
                 "Неверный формат индекса. Ожидается int или list[int, int]"

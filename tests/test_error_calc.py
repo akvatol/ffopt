@@ -10,7 +10,7 @@ from ffopt.jobs.error_calculator import (
 
 def test_get_data_by_index():
     data = [[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]
-    index = [2, 1]
+    index = [[2, 1]]
     result = get_data_by_index(data, index)
     assert result == [7, 8, 9]
 
@@ -45,7 +45,6 @@ def test_get_data_kpoints():
     assert data2 == []
 
 
-
 def test_process_atoms():
     target = [['W', 2, 2, 2, 0, 0, 1], ['S', 3, 3, 3, 1, 0, 1]]
     calculated = [['W', 1, 1, 1], ['S', 3, 4, 6]]
@@ -53,7 +52,7 @@ def test_process_atoms():
     assert data1 == [2, 3, 3]
     assert data2 == [1, 3, 6]
 
-
+# TODO
 def test_error_calculator_group_data():
     target_values = {
         'system1': {
@@ -85,9 +84,10 @@ def test_error_calculator_calculate_errors():
         }
     }
     calculated_values = {
-        'energy': 9.5,
-        'atoms': [['W', 2.1, 2.0, 2.0], ['S', 3.0, 3.1, 3.0]],
-        'bulk_values': [54, 123, 17]
+        'system1': {
+            'energy': 9.5,
+            'atoms': [['W', 2.1, 2.0, 2.0], ['S', 3.0, 3.1, 3.0]],
+            'bulk_values': [54, 123, 17]}
     }
     data_indexes = generate_data_indexes(target_values)
 

@@ -15,8 +15,10 @@ def main(input_file):
         toml = f.readlines()
         toml = ''.join(toml)
     data = tomllib.loads(toml)
+    # TODO WHY IS IT HERE?
     input_file = pathlib.Path(input_file)
     app = OptimizationPipeline.from_dict(data)
+    # TODO: RES attr object {X:np.array, F:np.array} 
     res = app.optimize()
     process_res(res, input_file)
 

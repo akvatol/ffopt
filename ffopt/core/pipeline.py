@@ -92,7 +92,9 @@ class OptimizationPipeline:
 
         algorithms = [
             # TODO Заменить на AlgorithmAdapter
-            PymooMOAdapter.from_dict(data["model"]["pipeline"][i])
+            PymooMOAdapter.from_dict(
+                data["model"]["pipeline"][i]
+                )
             for i in sorted(data["model"]["pipeline"].keys())
         ]
         # TODO: Должно выглядеть иначе, это затычка
