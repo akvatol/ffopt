@@ -1,4 +1,5 @@
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
+from pymatgen.analysis.structure_matcher import StructureMatcher
 
 
 def dict_to_sorted_list(data: dict[int, float]) -> list[float]:
@@ -154,6 +155,50 @@ class ErrorCalculator:
                     )
         return groups
 
+    def _create_structure(self, lattice_params, atoms_data):        
+        a, b, c = lattice_params[0:3]
+        alpha, beta, gamma = lattice_params[3:6]
+        lattice = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
+    
+        species = []
+        coords = []
+        for atom in atoms_data:
+            species.append(atom[0])
+            coords.append(atom[1:4])
+        
+        return Structure(
+            lattice=lattice,
+            species=species,
+            coords=coords,
+            coords_are_cartesian=False
+        )
+
+    def _calculate_structure_rmsd(self, target_data, calculated_data):
+        target_struct = self._create_structure(
+            target_data['lattice_par_dof'], # сделано допущение что в начальных данных при помощи CifParcer есть такой ключ
+            target_data['atoms_dof']
+        )
+        
+        calc_struct = self._create_structure(
+            calculated_data['cell_parameters'], # допущение что это есть от GulpSparser
+            calculated_data['atoms']
+        )
+
+        matcher = StructureMatcher(
+            ltol=0.2,     
+            stol=0.3,     
+            angle_tol=5,  
+            primitive_cell=True,
+            scale=True    
+        )
+        
+        # эта штука по умолчанию вернет None если структуры не эквивалентны
+        if matcher.fit(target_struct, calc_struct):
+            rms = matcher.get_rms_dist(target_struct, calc_struct)
+            return rms 
+        else:
+            return float('inf')  # вернет большое число если не эквивалентны вместо None
+
     # TODO: Расширить
     def _get_error_func(self, metric):
         metric = metric.lower()
@@ -161,6 +206,8 @@ class ErrorCalculator:
             return mean_absolute_error
         elif metric == "mape":
             return mean_absolute_percentage_error
+        elif metric == "rmsd": #NEW
+            return self._calculate_structure_rmsd
         else:
             raise ValueError(f"Unsupported metric: {metric}")
 
