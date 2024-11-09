@@ -1,6 +1,9 @@
 import re
 from functools import partial
 
+from pymatgen.core import Structure, Lattice, Element #NEW
+from pyxtal import pyxtal #NEW
+
 from ffopt.parsers.base import BaseParser
 
 
@@ -13,6 +16,7 @@ class GulpSParser(BaseParser):
             "atoms": read_asymmetric_unit,
             "cell": read_cell_parameters,
             "energy": read_energy,
+            "structure": parse_to_pyxtal, #NEW
             "bulk_modulus": partial(
                 read_bulk_shear, pattern="Bulk  Modulus (GPa)"
             ),
@@ -41,7 +45,6 @@ def read_phonon_kpoints(content):
     else:
         data = [-1000]
     return data
-
 
 def read_cell_parameters(content):
     """
@@ -230,3 +233,32 @@ def parse_elastic_constant_matrix(content):
                 matrix.append(row_values)
 
     return matrix if matrix else [[10**5] * 6] * 6
+
+def parse_to_pyxtal(self, content):   
+    atoms = read_asymmetric_unit(content) #не ставил наследование
+    cell_params = read_cell_parameters(content)
+
+    a, b, c = cell_params[0:3]
+    alpha, beta, gamma = cell_params[3:6]
+
+    lattice = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
+
+    species = []
+    for atom in atoms:
+        element_symbol = re.match(r'([A-Za-z]+)', atom[0]).group(1)
+        species.append(Element(element_symbol))
+
+    coords = [[atom[1], atom[2], atom[3]] for atom in atoms]
+
+    structure = Structure(
+        lattice=lattice,
+        species=species,
+        coords=coords,
+        coords_are_cartesian=False,
+        validate_proximity=True
+    )
+
+    crystal = pyxtal()
+    crystal.from_seed(structure)
+
+    return crystal
