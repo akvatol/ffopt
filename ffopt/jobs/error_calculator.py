@@ -110,6 +110,23 @@ def process_atoms(target, calculated):
     )
 
 
+def process_cell(target, calculated):
+    return (
+        [
+            i
+            for i, j in zip(target, calculated, strict=False)
+            for n, mask in enumerate(target[6:])
+            if mask
+        ],
+        [
+            j
+            for i, j in zip(target, calculated, strict=False)
+            for n, mask in enumerate(target[6:])
+            if mask
+        ],
+    )
+
+
 class ErrorCalculator:
     """
     A class for calculating errors between target and calculated values using various metrics.
@@ -162,6 +179,8 @@ class ErrorCalculator:
                         calculated = get_data_by_index(calculated, index)
                     elif key == "atoms":
                         target, calculated = process_atoms(target, calculated)
+                    elif key == "cell":
+                        target, calculated = process_cell(target, calculated)
                 if calculated is not None and group_name:
                     if group_name not in groups:
                         groups[group_name] = {"target": [], "calculated": []}
