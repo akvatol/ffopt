@@ -13,11 +13,6 @@
 ## Table of Contents
 1. [Installation](#installation)
 2. [Usage](#usage)
-3. [Features](#features)
-4. [Dependencies](#dependencies)
-5. [Development and Testing](#development-and-testing)
-6. [License](#license)
-7. [Contact](#contact)
 
 ---
 
