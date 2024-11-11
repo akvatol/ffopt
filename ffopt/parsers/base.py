@@ -4,7 +4,7 @@ from pathlib import PurePath
 class BaseParser:
     """Extendable parser for gulp out files."""
 
-    def __init__(self, filepath: PurePath, content=None):
+    def __init__(self, filepath: PurePath = None, content=None):
         self.filepath = filepath
         self._data: dict = {}
         self._extractors: dict = {}

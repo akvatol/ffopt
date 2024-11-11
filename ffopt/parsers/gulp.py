@@ -1,8 +1,8 @@
 import re
 from functools import partial
 
-from pymatgen.core import Structure, Lattice, Element #NEW
-from pyxtal import pyxtal #NEW
+from pymatgen.core import Element, Lattice, Structure
+from pyxtal import pyxtal
 
 from ffopt.parsers.base import BaseParser
 
@@ -16,7 +16,7 @@ class GulpSParser(BaseParser):
             "atoms": read_asymmetric_unit,
             "cell": read_cell_parameters,
             "energy": read_energy,
-            "structure": parse_to_pyxtal, #NEW
+            "structure": parse_to_pyxtal,
             "bulk_modulus": partial(
                 read_bulk_shear, pattern="Bulk  Modulus (GPa)"
             ),
@@ -45,6 +45,7 @@ def read_phonon_kpoints(content):
     else:
         data = [-1000]
     return data
+
 
 def read_cell_parameters(content):
     """
@@ -148,7 +149,7 @@ def read_asymmetric_unit(content):
             continue
 
         # TODO: Change the way it work
-        if "Final Cartesian coordinates" in line:
+        if "Final Cartesian" in line:
             break
 
         if "--------" in line:
@@ -180,7 +181,10 @@ def read_energy(content):
     energy_in_eV = 10**5
     for line in content:
         if "Total lattice energy" in line and line.strip().split()[-1] == "eV":
-            energy_in_eV = float(line.strip().split()[-2])
+            try:
+                energy_in_eV = float(line.strip().split()[-2])
+            except ValueError:
+                energy_in_eV = 10**5
 
     return energy_in_eV
 
@@ -190,7 +194,10 @@ def read_bulk_shear(content, pattern="Bulk  Modulus (GPa)"):
     for line in content:
         if pattern in line:
             _ = line.split("=")
-            values = list(map(float, _[-1].split()))
+            try:
+                values = list(map(float, _[-1].split()))
+            except ValueError:
+                values = [10**5] * 3
     return values
 
 
@@ -208,7 +215,7 @@ def parse_elastic_constant_matrix(content):
     matrix = []
     in_matrix_section = False
 
-    # Regular expression to match matrix rows
+    # Regular expression to match matrix rows # FIXME fails if 1233.1231-1234.5123
     row_pattern = re.compile(r"^\s*(\d+)\s+([\d\.\-\s]+)")
 
     for line in content:
@@ -234,8 +241,9 @@ def parse_elastic_constant_matrix(content):
 
     return matrix if matrix else [[10**5] * 6] * 6
 
-def parse_to_pyxtal(self, content):   
-    atoms = read_asymmetric_unit(content) #не ставил наследование
+
+def parse_to_pyxtal(content):   
+    atoms = read_asymmetric_unit(content)
     cell_params = read_cell_parameters(content)
 
     a, b, c = cell_params[0:3]
@@ -245,7 +253,7 @@ def parse_to_pyxtal(self, content):
 
     species = []
     for atom in atoms:
-        element_symbol = re.match(r'([A-Za-z]+)', atom[0]).group(1)
+        element_symbol = atom[0]
         species.append(Element(element_symbol))
 
     coords = [[atom[1], atom[2], atom[3]] for atom in atoms]

@@ -16,8 +16,8 @@ class ParserCif(BaseParser):
     used when processing .out files.
     """
 
-    def __init__(self, filepath: PurePath):
-        super().__init__(filepath)
+    def __init__(self, filepath: PurePath = None, content=None):
+        super().__init__(filepath, content)
         self.__extractors = {
             "group_number": get_group_number,
             "lattice_type": get_lattice_type,
@@ -29,10 +29,13 @@ class ParserCif(BaseParser):
 
     def parse(self) -> None:
         # TODO: Проверка на работу со сломанным парсером/mmcif
-        xtal_obj = pyxtal()
-        parser = CifParser(self.filepath)
-        structure = parser.parse_structures(primitive=True)[0]
-        xtal_obj.from_seed(structure)
+        if self.filepath:
+            xtal_obj = pyxtal()
+            parser = CifParser(self.filepath)
+            structure = parser.parse_structures(primitive=True)[0]
+            xtal_obj.from_seed(structure)
+        else:
+            xtal_obj = self.content
 
         for key, extractor in self.__extractors.items():
             self._data[key] = extractor(xtal_obj)
@@ -95,8 +98,8 @@ def _dof_to_opt(dofs: list):
 def _convert_coordinates_to_gulp_core_only(atoms: list) -> str:
     new_data = []
     for atom in atoms:
-        atom.insert(1, "core")
-        atom.insert(5, 0.0)
+        # atom.insert(1, "core")
+        atom.insert(4, 0.0)
         new_data.append(" ".join(str(i) for i in atom))
     return "\n".join(new_data)
 
