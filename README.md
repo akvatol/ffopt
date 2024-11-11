@@ -2,7 +2,7 @@
 
 **Version**: 0.5.0  
 **License**: MIT  
-**Author**: Anton Domnin ([a.v.daomnin@gmail.com](mailto:a.v.daomnin@gmail.com))
+**Author**: Anton Domnin (a.v.daomnin [at] gmail.com)
 
 ---
 
@@ -25,7 +25,7 @@
 To install it from source:
 
 ```bash
-git clone https://github.com/yourusername/ffopt.git
+git clone https://github.com/akvatol/ffopt.git
 cd ffopt
 pip install -r requirements.txt
 pip install .
