@@ -25,7 +25,7 @@
 To install it from source:
 
 ```bash
-git clone https://github.com/yourusername/ffopt.git
+git clone https://github.com/akvatol/ffopt.git
 cd ffopt
 pip install -r requirements.txt
 pip install .
