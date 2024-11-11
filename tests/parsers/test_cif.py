@@ -36,7 +36,7 @@ def test_get_group_number():
     """Test the get_group_number function with a real pyxtal object."""
     # Load structure from CIF
     parser = CifParser(TEST_CIF_PATH)
-    structure = parser.get_structures(primitive=True)[0]
+    structure = parser.parse_structures(primitive=True)[0]
 
     # Create pyxtal object
     xtal_obj = pyxtal()
@@ -51,7 +51,7 @@ def test_get_lattice_type():
     """Test the get_lattice_type function with a real pyxtal object."""
     # Load structure from CIF
     parser = CifParser(TEST_CIF_PATH)
-    structure = parser.get_structures(primitive=True)[0]
+    structure = parser.parse_structures(primitive=True)[0]
 
     # Create pyxtal object
     xtal_obj = pyxtal()
@@ -66,7 +66,7 @@ def test_get_full_lattice():
     """Test the get_full_lattice function with a real pyxtal object."""
     # Load structure from CIF
     parser = CifParser(TEST_CIF_PATH)
-    structure = parser.get_structures(primitive=True)[0]
+    structure = parser.parse_structures(primitive=True)[0]
 
     # Create pyxtal object
     xtal_obj = pyxtal()
@@ -83,7 +83,7 @@ def test_get_irr_atoms():
     """Test the get_irr_atoms function with a real pyxtal object."""
     # Load structure from CIF
     parser = CifParser(TEST_CIF_PATH)
-    structure = parser.get_structures(primitive=True)[0]
+    structure = parser.parse_structures(primitive=True)[0]
 
     # Create pyxtal object
     xtal_obj = pyxtal()
@@ -104,7 +104,7 @@ def test_gulp_only_core_structure():
     """Test the get_irr_atoms function with a real pyxtal object."""
     # Load structure from CIF
     parser = CifParser(TEST_CIF_PATH)
-    structure = parser.get_structures(primitive=True)[0]
+    structure = parser.parse_structures(primitive=True)[0]
 
     # Create pyxtal object
     xtal_obj = pyxtal()
@@ -117,7 +117,7 @@ def test_gulp_only_core_structure():
     assert struct == '''cell
 3.32 3.32 6.46 90.0 90.0 120.0 1 0 1 0 0 0
 fractional
-Nb core 0.0 0.0 0.0 0.0 0 0 0
-S core 0.3333333333333333 0.6666666666666666 0.25 0.0 0 0 0
+Nb 0.0 0.0 0.0 0.0 0 0 0
+S 0.3333333333333333 0.6666666666666666 0.25 0.0 0 0 0
 space
 194'''

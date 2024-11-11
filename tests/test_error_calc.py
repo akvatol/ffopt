@@ -4,7 +4,6 @@ from ffopt.jobs.error_calculator import (
     get_data_kpoints,
     grouping_rule,
     process_atoms,
-    generate_data_indexes
 )
 
 
@@ -52,6 +51,7 @@ def test_process_atoms():
     assert data1 == [2, 3, 3]
     assert data2 == [1, 3, 6]
 
+
 # TODO
 def test_error_calculator_group_data():
     target_values = {
@@ -61,13 +61,14 @@ def test_error_calculator_group_data():
         }
     }
     calculated_values = {
-        'energy': 9.5,
-        'atoms': [['W', 2.1, 2.0, 2.0], ['S', 3.0, 3.1, 3.0]],
+        'system1': {
+            'energy': 9.5,
+            'atoms': [['W', 2.1, 2.0, 2.0], ['S', 3.0, 3.1, 3.0]],
+        }
     }
-    data_indexes = {}
 
     calculator = ErrorCalculator(target_values, calculated_values)
-    groups = calculator.group_data(grouping_rule, data_indexes)
+    groups = calculator.group_data(grouping_rule)
 
     assert target_values['system1']['energy'] in groups[1]['target']
     assert len(groups) == 2
@@ -79,7 +80,7 @@ def test_error_calculator_calculate_errors():
         'system1': {
             'energy': 10.0,
             'atoms': [['W', 2, 2, 2, 1, 0, 1], ['S', 3, 3, 3, 0, 1, 0]],
-            'bulk_values': 123,
+            'bulk_modulus': 123,
             'bulk_index': [2]
         }
     }
@@ -87,12 +88,11 @@ def test_error_calculator_calculate_errors():
         'system1': {
             'energy': 9.5,
             'atoms': [['W', 2.1, 2.0, 2.0], ['S', 3.0, 3.1, 3.0]],
-            'bulk_values': [54, 123, 17]}
+            'bulk_modulus': [54, 123, 17]}
     }
-    data_indexes = generate_data_indexes(target_values)
 
     calculator = ErrorCalculator(target_values, calculated_values)
-    groups = calculator.group_data(grouping_rule, data_indexes)
+    groups = calculator.group_data(grouping_rule)
     errors = calculator.calculate_errors(groups, metric="mae")
 
     assert len(errors) == 3
