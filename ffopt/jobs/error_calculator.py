@@ -1,148 +1,168 @@
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
-from pymatgen.analysis.structure_matcher import StructureMatcher
 
 
 def dict_to_sorted_list(data: dict[int, float]) -> list[float]:
     """
-    Принимает словарь вида dict[int:float] и возвращает список значений,
-    отсортированных по ключам в словаре, от меньшего к большему.
+    Converts a dictionary to a sorted list of its values.
+
+    Args:
+        data (dict[int, float]): A dictionary with integer keys and float values.
+
+    Returns:
+        list[float]: A list of values sorted by the dictionary's keys in ascending order.
     """
     return [value for key, value in sorted(data.items())]
 
 
-def generate_data_indexes(data_dict):
-    data_indexes = {}
-    for _key, value in data_dict.items():
-        if isinstance(value, dict):
-            if "kpoints_index" in value:
-                data_indexes["kpoints_values"] = value["kpoints_index"]
-            if "elastic_index" in value:
-                data_indexes["elastic_values"] = value["elastic_index"]
-            if "bulk_index" in value:
-                data_indexes["bulk_modulus"] = value["bulk_index"]
-            if "youngs_index" in value:
-                data_indexes["youngs_modulus"] = value["youngs_index"]
-            if "shear_index" in value:
-                data_indexes["shear_modulus"] = value["shear_index"]
-    return data_indexes
+def generate_data_indexes(data_dict: dict):
+    """
+    Generates a mapping for data indexes based on predefined key patterns.
+
+    Args:
+        data_dict (dict): A dictionary with structure data, containing potential keys like
+                          'kpoints_index', 'elastic_index', etc.
+
+    Returns:
+        dict: A dictionary mapping specific index names to their corresponding values.
+    """
+    index_map = {
+        "kpoints_index": "kpoints_values",
+        "elastic_index": "elastic_values",
+        "bulk_index": "bulk_modulus",
+        "youngs_index": "youngs_modulus",
+        "shear_index": "shear_modulus",
+    }
+
+    return {
+        index_map[key]: value
+        for key, value in data_dict.items()
+        if key in index_map
+    }
 
 
 def get_data_by_index(data, indices):
     """
-    Получает на вход список индексов вида list[int] или list[list[int, int]] и
-    достает данные по индексам из соответствующих массивов.
+    Retrieve elements from nested data structures based on provided indices.
+
+    Args:
+        data (list): A nested list structure from which to retrieve elements.
+        indices (list): A list of indices, which may contain integers or lists of integers
+                        for nested indexing.
+
+    Returns:
+        list: A list of elements retrieved based on the indices.
     """
     result = []
     for index in indices:
-        if isinstance(index, list):
-            sub_result = data
-            for idx in index:
-                sub_result = sub_result[idx - 1]
-            if isinstance(sub_result, list):
-                result.extend(sub_result)
-            else:
-                result.append(sub_result)
-        elif isinstance(index, int):
-            sub_result = data[index - 1]
-            if isinstance(sub_result, list):
-                result.extend(sub_result)
-            else:
-                result.append(sub_result)
+        sub_result = data
+        for idx in index if isinstance(index, list) else [index]:
+            sub_result = sub_result[idx - 1]
+        if isinstance(sub_result, list):
+            result.extend(sub_result)
         else:
-            raise ValueError(
-                "Неверный формат индекса. Ожидается int или list[int, int]"
-            )
+            result.append(sub_result)
     return result
 
 
 def get_data_kpoints(target, calculated):
-    data1 = []
-    data2 = []
+    """
+    Adjusts the lengths of target and calculated k-point data to match.
+
+    Args:
+        target (list): The target k-point data list.
+        calculated (list): The calculated k-point data list.
+
+    Returns:
+        tuple: Two lists (data1, data2) with adjusted lengths.
+    """
+    data1, data2 = [], []
     for i, j in zip(target, calculated, strict=True):
-        # Это нужно, чтобы алгоритм правильно срабатывал, если парсер ничего не нашел.
-        # т.к. вы этом случае он вернёт [-1000]
-        if len(i) > len(j):
-            j.extend(j * (len(i) // len(j) + 1))
+        j = j * (len(i) // len(j) + 1) if len(i) > len(j) else j
         data1.extend(i)
         data2.extend(j[: len(i)])
-
-    # Ensure data2 matches the length of data1
-    if len(data2) < len(data1):
-        data2.extend(data2[: len(data1) - len(data2)])
-    elif len(data2) > len(data1):
-        data2 = data2[: len(data1)]
-
-    return data1, data2
+    return data1, data2[: len(data1)]
 
 
 def process_atoms(target, calculated):
-    data1 = [
-        i[n + 1]
-        for i, j in zip(target, calculated, strict=False)
-        for n, mask in enumerate(i[4:])
-        if mask
-    ]
-    data2 = [
-        j[n + 1]
-        for i, j in zip(target, calculated, strict=False)
-        for n, mask in enumerate(i[4:])
-        if mask
-    ]
-    return data1, data2
+    """
+    Processes atomic data by applying masks from the target data.
+
+    Args:
+        target (list): A list of target atomic data, with masks starting from the fifth element.
+        calculated (list): A list of calculated atomic data.
+
+    Returns:
+        tuple: Two lists containing selected values based on the masks.
+    """
+    return (
+        [
+            i[n + 1]
+            for i, j in zip(target, calculated, strict=False)
+            for n, mask in enumerate(i[4:])
+            if mask
+        ],
+        [
+            j[n + 1]
+            for i, j in zip(target, calculated, strict=False)
+            for n, mask in enumerate(i[4:])
+            if mask
+        ],
+    )
 
 
 class ErrorCalculator:
+    """
+    A class for calculating errors between target and calculated values using various metrics.
+
+    Attributes:
+        error_functions (dict): A dictionary mapping metric names to sklearn error functions.
+    """
+
+    error_functions = {
+        "mae": mean_absolute_error,
+        "mape": mean_absolute_percentage_error,
+    }
+
     def __init__(self, target_values, calculated_values):
         """
         Initialize the ErrorCalculator with target and calculated values.
 
-        Parameters:
-        - target_values: Dictionary with target values for different systems.
-        - calculated_values: Dictionary with new values for the same systems.
+        Args:
+            target_values (dict): Dictionary of target values for different systems.
+            calculated_values (dict): Dictionary of calculated values for the same systems.
         """
         self.target_values = target_values
         self.calculated_values = calculated_values
 
-    def group_data(self, grouping_rule, data_indexes: dict):
+    def group_data(self, grouping_rule):
         """
-        Group data based on the provided grouping rule.
+        Groups data according to a specified grouping rule.
 
-        Parameters:
-        - grouping_rule (callable): A function that takes
-        a key and returns the group name.
+        Args:
+            grouping_rule (callable): A function that takes a key and returns the group name.
 
         Returns:
-        - groups (dict): A dictionary where keys are group names
-        and values are lists of (target, calculated) tuples.
+            dict: A dictionary where keys are group names, and values are dictionaries
+                  containing lists of 'target' and 'calculated' values.
         """
         groups = {}
-        # TODO: refactore
         for system in self.target_values:
             target_system = self.target_values[system]
-            calculated_system = self.calculated_values[system]
-            for key in target_system:
+            calculated_system = self.calculated_values.get(system, {})
+            data_indexes = generate_data_indexes(target_system)
+            for key, target in target_system.items():
                 group_name = grouping_rule(key)
-                target = target_system[key]
                 calculated = calculated_system.get(key)
-
                 if hasattr(calculated, "__len__"):
                     if key == "kpoints_values":
                         target, calculated = get_data_kpoints(
-                            target=target, calculated=calculated
+                            target, calculated
                         )
-
                     elif index := data_indexes.get(key):
                         calculated = get_data_by_index(calculated, index)
-
                     elif key == "atoms":
-                        target, calculated = process_atoms(
-                            target=target, calculated=calculated
-                        )
-
-                if calculated is None:
-                    continue  # Skip if no calculated value is available
-
-                if group_name:
+                        target, calculated = process_atoms(target, calculated)
+                if calculated is not None and group_name:
                     if group_name not in groups:
                         groups[group_name] = {"target": [], "calculated": []}
                     groups[group_name]["target"].extend(
@@ -155,104 +175,63 @@ class ErrorCalculator:
                     )
         return groups
 
-    def _create_structure(self, lattice_params, atoms_data):        
-        a, b, c = lattice_params[0:3]
-        alpha, beta, gamma = lattice_params[3:6]
-        lattice = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
-    
-        species = []
-        coords = []
-        for atom in atoms_data:
-            species.append(atom[0])
-            coords.append(atom[1:4])
-        
-        return Structure(
-            lattice=lattice,
-            species=species,
-            coords=coords,
-            coords_are_cartesian=False
-        )
-
-    def _calculate_structure_rmsd(self, target_data, calculated_data):
-        target_struct = self._create_structure(
-            target_data['lattice_par_dof'], # сделано допущение что в начальных данных при помощи CifParcer есть такой ключ
-            target_data['atoms_dof']
-        )
-        
-        calc_struct = self._create_structure(
-            calculated_data['cell_parameters'], # допущение что это есть от GulpSparser
-            calculated_data['atoms']
-        )
-
-        matcher = StructureMatcher(
-            ltol=0.2,     
-            stol=0.3,     
-            angle_tol=5,  
-            primitive_cell=True,
-            scale=True    
-        )
-        
-        # эта штука по умолчанию вернет None если структуры не эквивалентны
-        if matcher.fit(target_struct, calc_struct):
-            rms = matcher.get_rms_dist(target_struct, calc_struct)
-            return rms 
-        else:
-            return float('inf')  # вернет большое число если не эквивалентны вместо None
-
-    # TODO: Расширить
     def _get_error_func(self, metric):
-        metric = metric.lower()
-        if metric == "mae":
-            return mean_absolute_error
-        elif metric == "mape":
-            return mean_absolute_percentage_error
-        elif metric == "rmsd": #NEW
-            return self._calculate_structure_rmsd
-        else:
-            raise ValueError(f"Unsupported metric: {metric}")
+        """
+        Returns the error function for a specified metric.
+
+        Args:
+            metric (str): The name of the metric ('mae' or 'mape').
+
+        Returns:
+            callable: The sklearn error function corresponding to the metric.
+
+        Raises:
+            ValueError: If the metric is not supported.
+        """
+        try:
+            return self.error_functions[metric.lower()]
+        except KeyError:
+            raise ValueError(f"Unsupported metric: {metric}")  # noqa: B904
 
     def calculate_errors(self, groups, metric="mae"):
         """
-        Calculate error metrics for each group.
+        Calculates error metrics for each group.
 
-        Parameters:
-        - groups (dict): The groups dictionary returned by group_data().
-        - metric (str): The error metric to use ('mae' or 'mape').
+        Args:
+            groups (dict): The groups dictionary returned by group_data().
+            metric (str): The error metric to use ('mae' or 'mape').
 
         Returns:
-        - errors (dict): A dictionary where keys are
-        group names and values are the calculated error.
+            list[float]: A sorted list of calculated error values by group.
         """
-        errors = {}
         err_func = self._get_error_func(metric)
-        for group_name, data in groups.items():
-            target = data["target"]
-            calculated = data["calculated"]
-            # TODO нельзя это так оставлять
-            if len(target) != len(calculated):
-                error = 10**3
-            else:
-                error = err_func(target, calculated)
-            errors[group_name] = error
+        errors = {
+            group_name: err_func(data["target"], data["calculated"])
+            if len(data["target"]) == len(data["calculated"])
+            else 10**3
+            for group_name, data in groups.items()
+        }
         return dict_to_sorted_list(errors)
 
 
 def grouping_rule(name):
+    """
+    Groups data keys based on predefined naming conventions.
+
+    Args:
+        name (str): The name of the key to group.
+
+    Returns:
+        int or None: The group identifier (integer) based on the key name, or None if unmatched.
+    """
     match name.lower():
         case "energy":
-            group = 1
-        # FIXME
-        #         case "cell" | "atoms":
-        #             group = 2
-        case (
-            "bulk_modulus"
-            | "elastic_values"
-            | "youngs_modulus"
-            | "shear_modulus"
-        ):
-            group = 3
+            return 1
+        case "cell" | "atoms":
+            return 2
+        case "bulk_modulus" | "elastic_values" | "youngs_modulus" | "shear_modulus":
+            return 3
         case "kpoints_values":
-            group = 4
+            return 4
         case _:
-            group = None
-    return group
+            return None
